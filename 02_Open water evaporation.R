@@ -71,9 +71,27 @@ colnames(evap_2016.df)<-date.2016
 # combine data for 2015 and 2016
 evap.df<-cbind(evap_2015.df,evap_2016.df)
 evap.df<-data.frame(t(evap.df))
-colnames(evap.df)<-c("Bremer", "Warrill", "Coulson", "Wild Cattle", "Reynold")
+colnames(evap.df)<-c("Bremer", "Warrill", "Coulson", "Wild Cattle", "Reynolds")
+evap.df$date<-as.Date(rownames(evap.df),format="%Y-%m-%d")
 
 
+#---
+# 3. observed water loss rate in pools
+#---
+total.loss<-read.csv("data/Bremer Stream/PoolHeight2_v2_nonFlowing period.csv")
+total.loss$Non.flowing.period<-as.Date(total.loss$Non.flowing.period,format="%d/%m/%Y")
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+evap.df%>%
+  pivot_longer(cols = -date,names_to = "Site",values_to = "evap")%>%
+  left_join(.,total.loss,by=c("Site","date"="Non.flowing.period"))%>%
+  mutate(Obs.loss_m=Obs.loss_m*1000)%>%
+  ggplot(aes(x=date,y=evap,color=Site))+
+  geom_line()+
+  geom_point(aes(x=date,y=Obs.loss_m))+
+  facet_wrap(~Site)
 
 
 
