@@ -88,10 +88,19 @@ evap.df%>%
   pivot_longer(cols = -date,names_to = "Site",values_to = "evap")%>%
   left_join(.,total.loss,by=c("Site","date"="Non.flowing.period"))%>%
   mutate(Obs.loss_m=Obs.loss_m*1000)%>%
-  ggplot(aes(x=date,y=evap,color=Site))+
-  geom_line()+
-  geom_point(aes(x=date,y=Obs.loss_m))+
-  facet_wrap(~Site)
+  ggplot(aes(x=date,y=Obs.loss_m))+
+  geom_point()+
+  geom_line(aes(x=date,y=evap),colour="grey")+
+  facet_wrap(~Site)+
+  theme_bw()+
+  xlab("Date")+ylab("Loss rate (mm/day)")+
+  ggsave(filename = "Figure/Loss rate.png")
+
+total.loss%>%
+  ggplot(aes(x=Site,y=Obs.loss_m))+
+  geom_boxplot()+
+  theme_bw()+
+  ylab("Loss rate (mm/day)")+ggsave(filename="Figure/boxplot_loss rate.png")
 
 
 
