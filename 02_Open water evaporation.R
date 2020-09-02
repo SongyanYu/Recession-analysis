@@ -78,30 +78,40 @@ evap.df$date<-as.Date(rownames(evap.df),format="%Y-%m-%d")
 #---
 # 3. observed water loss rate in pools
 #---
-total.loss<-read.csv("data/Bremer Stream/PoolHeight2_v2_nonFlowing period.csv")
-total.loss$Non.flowing.period<-as.Date(total.loss$Non.flowing.period,format="%d/%m/%Y")
+nonflow.loss<-read.csv("data/Bremer Stream/PoolHeight2_v2_nonFlowing period.csv")
+nonflow.loss$Date<-as.Date(nonflow.loss$Date,format="%d/%m/%Y")
+nonflow.loss$Period="non-flowing"
+
+flow.loss<-read.csv("data/Bremer Stream/PoolHeight2_v2_Flowing period.csv")
+flow.loss$Date<-as.Date(flow.loss$Date,format="%d/%m/%Y")
+flow.loss$Period="flowing"
+
 
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+
+obs.loss<-rbind(nonflow.loss,flow.loss)%>%
+  filter(Obs.loss_m>=0)
+
 evap.df%>%
   pivot_longer(cols = -date,names_to = "Site",values_to = "evap")%>%
-  left_join(.,total.loss,by=c("Site","date"="Non.flowing.period"))%>%
+  left_join(.,obs.loss,by=c("Site","date"="Date"))%>%
   mutate(Obs.loss_m=Obs.loss_m*1000)%>%
   ggplot(aes(x=date,y=Obs.loss_m))+
-  geom_point()+
+  geom_point(aes(color=Period))+
+  scale_color_brewer(palette="Dark2")+
   geom_line(aes(x=date,y=evap),colour="grey")+
-  facet_wrap(~Site)+
+  facet_wrap(~Site,scale="free")+
   theme_bw()+
   xlab("Date")+ylab("Loss rate (mm/day)")+
   ggsave(filename = "Figure/Loss rate.png")
 
-total.loss%>%
+nonflow.loss%>%
   ggplot(aes(x=Site,y=Obs.loss_m))+
   geom_boxplot()+
   theme_bw()+
   ylab("Loss rate (mm/day)")+ggsave(filename="Figure/boxplot_loss rate.png")
-
 
 
 
