@@ -26,12 +26,11 @@ df<-daily.pool.depth%>%
   mutate(diff=c(-diff(Depth),0),
          flowing=ifelse(Depth>=Discon_depth,"Y","N"))
 
-  df%>%ggplot(aes(x=Date,y=Depth))+
+df%>%ggplot(aes(x=Date,y=Depth))+
   geom_line()+
-    geom_point(aes(y=diff))+
+  geom_point(aes(y=diff))+
   facet_wrap(~Site)+
   theme_bw()+
   ylab("Depth (cm)")
-
 
 
