@@ -1,6 +1,5 @@
 #' daily mean pool water level
 #' 
-#' @export
 
 # 1. read in water height logger records
 setwd("../../")
@@ -20,11 +19,52 @@ daily.pool.depth<-pool.level%>%
 
 library(ggplot2)
 daily.pool.depth%>%
-  ggplot(aes(x=Date,y=Depth,colour=Site))+
+  ggplot(aes(x=Date,y=Depth))+
   geom_line()+
-  facet_wrap(~Site)
+  facet_wrap(~Site)+
+  theme_bw()+
+  ylab("Depth (cm)")+
+  ggsave(filename = "Figure/Water level change.png")
+
+nonflow.loss<-read.csv("data/Bremer Stream/PoolHeight2_v2_nonFlowing period.csv")
+nonflow.loss$Date<-as.Date(nonflow.loss$Date,format="%d/%m/%Y")
+nonflow.loss$Period="non-flowing"
+
+flow.loss<-read.csv("data/Bremer Stream/PoolHeight2_v2_Flowing period.csv")
+flow.loss$Date<-as.Date(flow.loss$Date,format="%d/%m/%Y")
+flow.loss$Period="flowing"
+
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+rbind(nonflow.loss,flow.loss)%>%
+  filter(Obs.loss_m>=0)%>%
+  right_join(.,daily.pool.depth,by=c("Site","Date"))%>%
+  mutate(Obs.loss_m=Obs.loss_m*1000)%>%
+  ggplot(aes(x=Date))+
+  geom_line(aes(y=Depth))+
+  geom_point(aes(y=Obs.loss_m,color=Period))+
+  scale_color_brewer(palette="Dark2")+
+  facet_wrap(~Site,scale="free")+
+  scale_y_continuous(sec.axis = sec_axis(~.*1,name = "Loss rate (mm/day)"))+
+  theme_bw()+
+  ylab("Depth (cm)")+
+  theme(legend.position = c(0.9,0.2))+
+  ggsave(filename = "Figure/Water level and loss.png",width = 10,height = 10/1.564)
 
 #write.csv(daily.pool.depth,file = "data/Bremer Stream/PoolHeight2_v2.csv",row.names = FALSE)
+
+rbind(nonflow.loss,flow.loss)%>%
+  filter(Obs.loss_m>=0)%>%
+  ggplot()+
+  geom_boxplot(aes(x=Site,y=Obs.loss_m,colour=Period))+
+  scale_color_brewer(palette = "Dark2")+
+  theme_bw()+
+  ylab("Recession rate (m/day)")+
+  theme(legend.position = c(0.4,0.8))+
+  ggsave(filename = "Figure/boxplot_loss rate.png",width = 6,height = 3)
 
 # 2. add flowing and non-flowing to figures
 period.photo<-read.csv("data/Bremer Stream/Flowing and non-flowing period_photos.csv")
@@ -59,21 +99,5 @@ daily.pool.depth%>%
   ggplot()+
   geom_line(aes(x=Date,y=Depth,colour=Site,size=status))+
   facet_wrap(~Site)+
-  scale_size_manual(values = c(3,0.2,1.5))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  scale_size_manual(values = c(3,0.2,1.5))+
+  ggsave(filename = "Figure/Pool depth.png")
