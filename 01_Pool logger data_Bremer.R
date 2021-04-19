@@ -48,7 +48,7 @@ rbind(nonflow.loss,flow.loss)%>%
   geom_point(aes(y=Obs.loss_m,color=Period))+
   scale_color_brewer(palette="Dark2")+
   facet_wrap(~Site,scale="free")+
-  scale_y_continuous(sec.axis = sec_axis(~.*1,name = "Loss rate (mm/day)"))+
+  scale_y_continuous(sec.axis = sec_axis(~.*0.001,name = "Daily water level recession rate (m/day)"))+
   theme_bw()+
   ylab("Depth (cm)")+
   theme(legend.position = c(0.9,0.2))+
@@ -65,6 +65,21 @@ rbind(nonflow.loss,flow.loss)%>%
   ylab("Recession rate (m/day)")+
   theme(legend.position = c(0.4,0.8))+
   ggsave(filename = "Figure/boxplot_loss rate.png",width = 6,height = 3)
+
+
+w.test.q<-rbind(nonflow.loss,flow.loss)%>%
+  filter(Obs.loss_m>=0)%>%
+  pivot_wider(names_from = Period,values_from=Obs.loss_m)%>%
+  rename(non_flowing='non-flowing')%>%
+  group_by(Site)%>%
+  summarise(w.test=wilcox.test(unlist(non_flowing),unlist(flowing))[3])
+
+w.test.w<-rbind(nonflow.loss,flow.loss)%>%
+  filter(Obs.loss_m>=0)%>%
+  pivot_wider(names_from = Period,values_from=Obs.loss_m)%>%
+  rename(non_flowing='non-flowing')%>%
+  group_by(Site)%>%
+  summarise(w.test=wilcox.test(unlist(non_flowing),unlist(flowing))[1])
 
 # 2. add flowing and non-flowing to figures
 period.photo<-read.csv("data/Bremer Stream/Flowing and non-flowing period_photos.csv")
