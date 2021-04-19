@@ -104,14 +104,11 @@ evap.df%>%
   geom_line(aes(x=date,y=evap),colour="grey")+
   facet_wrap(~Site,scale="free")+
   theme_bw()+
-  xlab("Date")+ylab("Loss rate (mm/day)")+
-  ggsave(filename = "Figure/Loss rate.png")
+  xlab("Date")+ylab("Water level recession rate (m/day)")+
+  theme(legend.position = c(0.9,0.2))+
+  ggsave(filename = "Figure/Loss rate.png",
+         height = 5.73, width = 9.31)
 
-nonflow.loss%>%
-  ggplot(aes(x=Site,y=Obs.loss_m))+
-  geom_boxplot()+
-  theme_bw()+
-  ylab("Loss rate (mm/day)")+ggsave(filename="Figure/boxplot_loss rate.png")
 
 
 
