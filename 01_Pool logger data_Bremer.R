@@ -48,7 +48,7 @@ rbind(nonflow.loss,flow.loss)%>%
   geom_point(aes(y=Obs.loss_m,color=Period))+
   scale_color_brewer(palette="Dark2")+
   facet_wrap(~Site,scale="free")+
-  scale_y_continuous(sec.axis = sec_axis(~.*0.001,name = "Daily water level recession rate (m/day)"))+
+  scale_y_continuous(sec.axis = sec_axis(~.*1,name = "Loss rate (mm/day)"))+
   theme_bw()+
   ylab("Depth (cm)")+
   theme(legend.position = c(0.9,0.2))+
