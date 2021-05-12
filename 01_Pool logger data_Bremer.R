@@ -39,48 +39,14 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 
-temp<-rbind(nonflow.loss,flow.loss)%>%
-  filter(Obs.loss_m>=0)%>%
-  right_join(.,daily.pool.depth,by=c("Site","Date"))%>%
-  mutate(Obs.loss_m=Obs.loss_m*1000)
-temp$Date
-
-library(lubridate)
-
-seq.dates<-seq.Date(from = ymd("2015-08-01"),to = ymd("2016-07-31"),by = "day")
-
-match(temp$Date,seq.dates)
-
-break.point<-which(diff(match(temp$Date,seq.dates))!=1)
-
-m<-1
-conse.length<-length(m)
-while(conse.length < nrow(temp)){
-  if(conse.length %in% break.point){
-    m<-append(m,1)
-  }
-  else{
-    m<-append(m,(m[length(m)]+1))
-  }
-  conse.length<-length(m)
-}
-
-non.flowing.loss<-temp%>%
-  filter(Period == "non-flowing")
-flowing.loss<-temp%>%
-  filter(Period == "flowing")
-
 rbind(nonflow.loss,flow.loss)%>%
   filter(Obs.loss_m>=0)%>%
   right_join(.,daily.pool.depth,by=c("Site","Date"))%>%
-  mutate(Obs.loss_m=Obs.loss_m*1000,
-         days.since.flowing = m,
-         days.since.flowing = ifelse(Period == "flowing", days.since.flowing, 0))%>%
-  ggplot()+
-  geom_line(aes(x=Date,y=Depth))+
-  geom_point(data = non.flowing.loss,aes(x = Date, y = Obs.loss_m),colour = "#D95F02")+
-  geom_point(data = flowing.loss, aes(x = Date, y = Obs.loss_m, color = days.since.flowing))+
-#  scale_color_brewer(palette="Dark2")+
+  mutate(Obs.loss_m=Obs.loss_m*1000)%>%
+  ggplot(aes(x=Date))+
+  geom_line(aes(y=Depth))+
+  geom_point(aes(y = Obs.loss_m, color = Period))+
+  scale_color_brewer(palette="Dark2")+
   facet_wrap(~Site,scale="free")+
   scale_y_continuous(sec.axis = sec_axis(~.*1,name = "Loss rate (mm/day)"))+
   theme_bw()+
